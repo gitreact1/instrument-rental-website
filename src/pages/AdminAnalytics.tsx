@@ -1,10 +1,14 @@
 import { useState } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { FinancialKPIs } from '@/components/admin/analytics/FinancialKPIs';
+import { RevenueChart } from '@/components/admin/analytics/RevenueChart';
+import { DailyStats } from '@/components/admin/analytics/DailyStats';
+import { CategoryRevenue } from '@/components/admin/analytics/CategoryRevenue';
+import { TopTools } from '@/components/admin/analytics/TopTools';
 import Icon from '@/components/ui/icon';
 
 const AdminAnalytics = () => {
@@ -93,153 +97,18 @@ const AdminAnalytics = () => {
 
         {/* Overview Tab */}
         <TabsContent value="overview" className="space-y-6">
-          {/* Key Metrics */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {financialKPIs.map((kpi, index) => (
-              <Card key={index}>
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium text-gray-600">
-                    {kpi.name}
-                  </CardTitle>
-                  <Icon 
-                    name={kpi.positive ? 'TrendingUp' : 'TrendingDown'} 
-                    size={16} 
-                    className={kpi.positive ? 'text-green-600' : 'text-red-600'} 
-                  />
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold">{kpi.value}</div>
-                  <p className={`text-xs mt-1 ${kpi.positive ? 'text-green-600' : 'text-red-600'}`}>
-                    {kpi.change} с прошлого периода
-                  </p>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
+          <FinancialKPIs kpis={financialKPIs} />
 
-          {/* Revenue Chart Simulation */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Динамика доходов по месяцам</CardTitle>
-              <CardDescription>
-                Рост выручки: +{growthRate}% за последний месяц
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                {revenueData.map((data, index) => {
-                  const maxRevenue = Math.max(...revenueData.map(d => d.revenue));
-                  const percentage = (data.revenue / maxRevenue) * 100;
-                  
-                  return (
-                    <div key={index} className="flex items-center space-x-4">
-                      <div className="w-12 text-sm font-medium">{data.month}</div>
-                      <div className="flex-1">
-                        <div className="flex items-center justify-between mb-1">
-                          <span className="text-sm">₽{data.revenue.toLocaleString()}</span>
-                          <span className="text-xs text-gray-600">{data.orders} заказов</span>
-                        </div>
-                        <Progress value={percentage} className="h-2" />
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            </CardContent>
-          </Card>
+          <RevenueChart data={revenueData} growthRate={growthRate} />
 
-          {/* Daily Statistics */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Статистика по дням недели</CardTitle>
-              <CardDescription>
-                Активность клиентов в течение недели
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-7 gap-4">
-                {dailyStats.map((day, index) => {
-                  const maxOrders = Math.max(...dailyStats.map(d => d.orders));
-                  const intensity = (day.orders / maxOrders) * 100;
-                  
-                  return (
-                    <div key={index} className="text-center space-y-2">
-                      <div className="font-medium">{day.day}</div>
-                      <div 
-                        className="w-full h-16 bg-blue-500 rounded opacity-80 flex items-end justify-center text-white text-xs font-medium"
-                        style={{ height: `${Math.max(intensity, 20)}px` }}
-                      >
-                        {day.orders}
-                      </div>
-                      <div className="text-xs text-gray-600">
-                        ₽{day.revenue.toLocaleString()}
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            </CardContent>
-          </Card>
+          <DailyStats stats={dailyStats} />
         </TabsContent>
 
         {/* Revenue Tab */}
         <TabsContent value="revenue" className="space-y-6">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {/* Category Revenue */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Доходы по категориям</CardTitle>
-                <CardDescription>
-                  Распределение выручки по типам инструментов
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                {categoryStats.map((category, index) => (
-                  <div key={index} className="space-y-2">
-                    <div className="flex items-center justify-between">
-                      <span className="font-medium">{category.name}</span>
-                      <span className="text-sm text-gray-600">{category.share}%</span>
-                    </div>
-                    <Progress value={category.share} className="h-2" />
-                    <div className="flex items-center justify-between text-xs text-gray-600">
-                      <span>₽{category.revenue.toLocaleString()}</span>
-                      <span>{category.orders} заказов</span>
-                    </div>
-                  </div>
-                ))}
-              </CardContent>
-            </Card>
-
-            {/* Top Performing Tools */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Топ инструментов по доходам</CardTitle>
-                <CardDescription>
-                  Самые прибыльные позиции каталога
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  {topTools.map((tool, index) => (
-                    <div key={index} className="flex items-center justify-between p-3 border rounded-lg">
-                      <div className="flex-1">
-                        <p className="font-medium text-sm">{tool.name}</p>
-                        <div className="flex items-center space-x-4 mt-1">
-                          <span className="text-xs text-gray-600">{tool.rents} аренд</span>
-                          <span className="text-xs">★ {tool.rating}</span>
-                        </div>
-                      </div>
-                      <div className="text-right">
-                        <p className="font-bold">₽{tool.revenue.toLocaleString()}</p>
-                        <Badge variant="secondary" className="text-xs">
-                          #{index + 1}
-                        </Badge>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
+            <CategoryRevenue categories={categoryStats} />
+            <TopTools tools={topTools} />
           </div>
         </TabsContent>
 
